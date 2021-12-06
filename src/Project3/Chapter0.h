@@ -15,6 +15,16 @@ public:
 	}
 };
 
+class myChapter : public Chapter0 {
+public:
+	myChapter() { name = "G4G:My Chapter"; }
+	void start();
+	void update(double);
+	void end();
+	void callback(GLFWwindow* window, int width, int height);
+	void dragDrop(GLFWwindow* window, int count, const char** paths);
+};
+
 class Chapter1 : public Chapter0 {
 public:
 	Chapter1() { name = "G4G:Chapter 1"; }

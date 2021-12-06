@@ -36,10 +36,10 @@
 
 #include "Chapter0.h"
 
-SceneGraph scene;
-SceneGraph* globalScene;
+static SceneGraph scene;
+static SceneGraph* globalScene;
 
-void Chapter2::dragDrop(GLFWwindow* window, int count, const char** paths) {
+void myChapter::dragDrop(GLFWwindow* window, int count, const char** paths) {
     int i;
 
     std::string objFile, textureFile;
@@ -55,15 +55,16 @@ void Chapter2::dragDrop(GLFWwindow* window, int count, const char** paths) {
             if (temp.find("obj") != std::string::npos) {
                 objFile = temp;
             }
-            else if((temp.find("jpg") != std::string::npos) || (temp.find("png") != std::string::npos))
+            else if ((temp.find("jpg") != std::string::npos) || (temp.find("png") != std::string::npos))
                 textureFile = temp;
-        }        
-        Material *temp = new Material(Shader::shaders["textured"], textureFile, loadTexture(textureFile.c_str()), 4, true);
+        }
+        Material* temp = new Material(Shader::shaders["textured"], textureFile, loadTexture(textureFile.c_str()), 4, true);
         scene.addRenderer(new ObjModel(objFile.c_str(), temp, glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.0f, 0.0f)), glm::vec3(1.0f))));
-    }else if (temp.find("obj") != std::string::npos)
+    }
+    else if (temp.find("obj") != std::string::npos)
         scene.addRenderer(new ObjModel(paths[0], Material::materials["litMaterial"], glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)), glm::vec3(1.0f))));
 }
-void cubeOfCubes(SceneGraph* sg)
+static void cubeOfCubes(SceneGraph* sg)
 {
     for (int i = -1; i < 2; i++)
         for (int j = -1; j < 2; j++)
@@ -80,11 +81,11 @@ void cubeOfCubes(SceneGraph* sg)
                 else
                     nC = new CubeModel(Material::materials["litMaterial"], xf);
                 sg->addRenderer(nC);
-                nC->name = "subCube "  + std::to_string(i)  + ':' + std::to_string(j) + ':' + std::to_string(k);
+                nC->name = "subCube " + std::to_string(i) + ':' + std::to_string(j) + ':' + std::to_string(k);
             }
 }
 
-void setupShadersAndMaterials(std::map<std::string, unsigned int> texMap)
+static void setupShadersAndMaterials(std::map<std::string, unsigned int> texMap)
 {
     {   // declare and intialize shader with colored vertices
         new Shader("data/vertColors.glsl", "data/fragColors.glsl", "colored");
@@ -106,29 +107,23 @@ void setupShadersAndMaterials(std::map<std::string, unsigned int> texMap)
     }
 }
 
-iCubeModel* cubeSystem = NULL;
-QuadModel* frontQuad = NULL;
+static iCubeModel* cubeSystem = NULL;
+static QuadModel* frontQuad = NULL;
 
-void setupScene(SceneGraph* scene, treeNode** nodes)
+static void setupScene(SceneGraph* scene, treeNode** nodes)
 {
     nodes[0] = scene->getCurrentNode();
     nodes[0]->enabled = true;
 
     nodes[1] = scene->addChild(glm::mat4(1));
-    nodes[1]->enabled = false;
 
-    //glm::mat4 floorXF = glm::rotate(glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.0f, -1.0f, 0.0f)), glm::vec3(10.0f)), glm::pi<float>() / 2.0f, glm::vec3(-1, 0, 0));
-    //scene->addRenderer(frontQuad = new QuadModel(Material::materials["brick"], floorXF)); // our floor quad
+    scene -> addRenderer(new IcosModel(Material::materials["litMaterial"], glm::translate(glm::mat4(0.5f), glm::vec3(0.0f, -2.0f, 0.0f))));
 
-    //scene->addRenderer(new ObjModel("data/Sponza-master/sponza.obj_", Material::materials["litMaterial"], glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.0f, 0.0f)), glm::vec3(.02f))));
-    //scene->addRenderer(new ObjModel("data/fireplace/fireplace_room.obj_", Material::materials["litMaterial"], glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -3.0f, 0.0f)), glm::vec3(.02f))));
-    //scene->addRenderer(new ObjModel("data/shuttle.obj_", Material::materials["shuttle"], glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)), glm::vec3(2.0f))));
-
-    nodes[2] = scene->addChild(glm::mat4(1));
+    nodes[2] = nodes[1]->addChild(glm::mat4(1));
 
     scene->addRenderer(cubeSystem = new iCubeModel(Material::materials["pMaterial"], glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(.025f)), glm::vec3(0.0f, 0.0f, 0.0f))));
 
-    //scene->addRenderer(frontQuad = new QuadModel(Material::materials["rpi"], glm::mat4(1.0f))); // our "first quad
+    scene->addRenderer(frontQuad = new QuadModel(Material::materials["rpi"], glm::mat4(1.0f))); // our "first quad
 
     scene->addRenderer(new QuadModel(Material::materials["coloredVerts"], glm::rotate(glm::mat4(1.0f), glm::pi<float>(), glm::vec3(1.0, 0.0, 0.0)))); // our "second quad"
 
@@ -143,7 +138,7 @@ void setupScene(SceneGraph* scene, treeNode** nodes)
 
 }
 
-void animateNodes(treeNode** nodes, double time)
+static void animateNodes(treeNode** nodes, double time)
 {
     // animating the three levels of our hierarchy
     if (nodes[2] != NULL)nodes[2]->setXform(glm::rotate(glm::mat4(1.0f), (float)time, glm::vec3(1, 0, 0.0f)));
@@ -152,11 +147,11 @@ void animateNodes(treeNode** nodes, double time)
 
 }
 
-unsigned int depthMapFBO = 0;
-unsigned int offscreenFBO = 0;
-treeNode* nodes[5];
+static unsigned int depthMapFBO = 0;
+static unsigned int offscreenFBO = 0;
+static treeNode* nodes[5];
 
-std::map<std::string, unsigned int> texMap;
+static std::map<std::string, unsigned int> texMap;
 
 const unsigned int SHADOW_WIDTH = 1024;
 const unsigned int SHADOW_HEIGHT = 1024;
@@ -166,13 +161,13 @@ extern unsigned int scrn_width;
 extern unsigned int scrn_height;
 
 
-unsigned int texture[] = { 0,1,2,3 };
+static unsigned int texture[] = { 0,1,2,3 };
 
-CubeModel* lightCube = NULL;
-SkyboxModel* mySky;
-QuadModel* fQuad;
+static CubeModel* lightCube = NULL;
+static SkyboxModel* mySky;
+static QuadModel* fQuad;
 
-void Chapter2::start()
+void myChapter::start()
 {
     globalScene = &scene;
 
@@ -187,13 +182,14 @@ void Chapter2::start()
     texMap["unicorn"] = loadTexture("data/unicorn.png");
     texMap["rpi"] = loadTexture("data/rpi.png");
     texMap["brick"] = loadTexture("data/brick1.jpg");
+    texMap["qr"] = loadTexture("data/qr.png");
 
     // 
     // set up the perspective projection for the camera and the light
     //
     scene.camera.setPerspective(glm::radians(60.0f), ((float)scrn_width / (float)scrn_height), 0.01f, 1000.0f);    //  1.0472 radians = 60 degrees
     scene.camera.position = glm::vec4(0, -5, 0, 1.0f);
-    scene.camera.target = glm::vec4(0, -5, 0, 1.0f);
+    scene.camera.target = glm::vec4(0, 0, 0, 1.0f);
 
     //scene.light.setOrtho(-4.0f, 4.0f, -4.0f, 4.0f, 1.0f, 50.0f);
     scene.light.setPerspective(glm::radians(60.0f), 1.0, 1.0f, 1000.0f);    //  1.0472 radians = 60 degrees
@@ -212,6 +208,7 @@ void Chapter2::start()
 
         new Material(Shader::shaders["base"], "white", -1, glm::vec4(1.0, 1.0, 1.0, 1.0));
         new Material(Shader::shaders["base"], "green", -1, glm::vec4(0.80, 0.80, 0.0, 1.0));
+        
     }
     {   // declare and intialize skybox shader and background material
         new Shader("data/vSky.glsl", "data/fSky.glsl", "SkyBox");
@@ -228,14 +225,10 @@ void Chapter2::start()
     {   // declare and intialize shader with ADS lighting
         new Shader("data/vFlatLit.glsl", "data/fFlatLit.glsl", "PhongShadowed");
         new Material(Shader::shaders["PhongShadowed"], "litMaterial", texMap["myTexture"], texMap["depth"], true);
+        //new Material(Shader::shaders["PhongShadowed"], "qr", texMap["qr"], texMap["depth"], true);
 
         new Shader("data/vertTexture.glsl", "data/fragTexture.glsl", "textured");
-
-        new Material(Shader::shaders["textured"], "shuttle", texMap["shuttle"], texMap["sky"]);
-        new Material(Shader::shaders["textured"], "checkers", texMap["myTexture"], texMap["sky"]);
-        new Material(Shader::shaders["textured"], "unicorn", texMap["unicorn"], texMap["sky"]);
-        new Material(Shader::shaders["textured"], "rpi", texMap["rpi"], texMap["sky"]);
-        new Material(Shader::shaders["textured"], "brick", texMap["brick"], texMap["sky"]);
+        new Material(Shader::shaders["textured"], "qr", texMap["qr"], texMap["sky"]);
     }
 
     setupShadersAndMaterials(texMap);
@@ -251,16 +244,16 @@ void Chapter2::start()
     // 
     // Setup all of the objects to be rendered and add them to the scene at the appropriate level
     scene.addRenderer(new CubeModel(Material::materials["litMaterial"], glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f))));
-    scene.addRenderer(new SphereModel(Material::materials["litMaterial"], glm::translate(glm::mat4(0.5f), glm::vec3(0.0f, -2.0f, 0.0f))));
+    
 
-    scene.addRenderer(new SphereModel(Material::materials["green"], glm::translate(glm::mat4(0.5f), glm::vec3(0.0f, -2.0f, 0.0f))));
+    //scene.addRenderer(new SphereModel(Material::materials["green"], glm::translate(glm::mat4(0.5f), glm::vec3(0.0f, -2.0f, 0.0f))));
 
-    scene.addRenderer(new CubeModel(Material::materials["rpi"], glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f))));
+    scene.addRenderer(new CubeModel(Material::materials["qr"], glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f))));
 
-    lightCube = new CubeModel(Material::materials["white"], glm::translate(glm::mat4(1.0f), scene.light.position));
-    //scene.addRenderer(lightCube);
+    scene.addRenderer(lightCube = new CubeModel(Material::materials["white"], glm::translate(glm::mat4(1.0f), scene.light.position)));
 
-    scene.addRenderer(new CubeModel(Material::materials["rpi"], glm::translate(glm::mat4(0.5f), glm::vec3(0.0f, 0.0f, 0.0f))));
+    scene.addRenderer(new ObjModel("data/table.obj_", Material::materials["green"], glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-2.0f, 0.0f, 0.0f)), glm::vec3(0.005f))));
+
 
     //{
         // crazy scene stuff
@@ -269,7 +262,7 @@ void Chapter2::start()
 
 }
 
-void Chapter2::update(double deltaTime) {
+void myChapter::update(double deltaTime) {
 
     //animate crazy scene stuff
     animateNodes(nodes, scene.time);
@@ -324,7 +317,7 @@ void Chapter2::update(double deltaTime) {
     //scene.time = glfwGetTime();
 }
 
-void Chapter2::end() {
+void myChapter::end() {
     deleteTextures(texture);
 
     static std::map<std::string, Shader*> sTemp = Shader::shaders;
@@ -345,7 +338,7 @@ void Chapter2::end() {
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void Chapter2::callback(GLFWwindow* window, int width, int height)
+void myChapter::callback(GLFWwindow* window, int width, int height)
 {
     globalScene->camera.setAspect((float)width / (float)height);
 }

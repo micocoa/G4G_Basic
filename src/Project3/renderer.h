@@ -131,4 +131,5 @@ private:
 };
 
 #include "SphereModel.h"
+#include "IcosModel.h"
 
